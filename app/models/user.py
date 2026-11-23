@@ -33,6 +33,7 @@ class User(Base):
     # 🔗 Add this relationship property so SQLAlchemy maps it correctly
     student_profile: Mapped[Optional["StudentProfile"]] = relationship("StudentProfile", back_populates="user", uselist=False)
 
+    
     @property
     def role_id(self) -> Optional[int]:
         return self.roles[0].id if self.roles else None

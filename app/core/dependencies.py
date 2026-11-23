@@ -85,7 +85,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         if user_id_str is None:
             raise credentials_exception
         
-        # 🔧 កែតម្រូវ៖ បម្លែង string 'sub' ត្រឡប់ទៅជា int វិញ ដើម្បី సరిសមជាមួយ Database ID
+        # 🔧 កែតម្រូវ៖ បម្លែង string 'sub' ត្រឡប់ទៅជា int វិញ ដើម្បី សមជាមួយ Database ID
         user_id = int(user_id_str)
         
     except (jwt.PyJWTError, ValueError):

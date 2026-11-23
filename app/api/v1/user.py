@@ -6,6 +6,7 @@ from app.database.session import get_db
 from app.models.user import User
 from app.models.role import Role
 from app.core.dependencies import require_role_and_permission  # 📌 ប្រើប្រាស់ Composite Dependency
+from app.models.user_role import UserRole
 from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserRoleAssign
 from app.services.user_service import UserService
 
@@ -77,32 +78,19 @@ def update_user(
     return user
 
 
-# ៤. កែប្រែ ឬ Assign Role ឱ្យ User (Admin only + user:assign_role permission)
 @router.put("/{user_id}/role", status_code=status.HTTP_200_OK)
-def assign_role_to_user(
-    user_id: int,
-    payload: UserRoleAssign,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_role_and_permission(["Admin"], "user.assign_role"))
+def assign_role_endpoint(
+    user_id: int, 
+    payload: UserRoleAssign, 
+    db: Session = Depends(get_db)
 ):
-    """Assign or change role for a specific user (Admin only)."""
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-        
-    role = db.query(Role).filter(Role.id == payload.role_id).first()
-    if not role:
-        raise HTTPException(status_code=404, detail="Role not found")
-        
-    user.role_id = payload.role_id
-    db.commit()
+    # ហៅប្រើប្រាស់ Static Method ក្នុង UserService ដែលអ្នកទើបតែសរសេរ
+    updated_user = UserService.assign_role(db, user_id, payload.role_id)
     
     return {
-        "message": f"Successfully assigned role '{role.name}' to user '{user.username}'",
-        "user_id": user.id,
-        "assigned_role_id": role.id
+        "message": "Role assigned successfully to user!",
+        "user_id": updated_user.id
     }
-
 
 # ៥. លុប User ចេញពីប្រព័ន្ធ (Admin only + user:delete permission)
 @router.delete("/{user_id}", status_code=status.HTTP_200_OK)

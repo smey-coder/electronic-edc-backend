@@ -11,7 +11,7 @@ from app.schemas.role import RoleCreate, RoleUpdate
 class RoleService:
 
     @staticmethod
-    def create_role(db: Session, payload: RoleCreate) -> Role:
+    def create_role(db: Session, payload: RoleCreate) -> dict:
         # ពិនិត្យមើលឈ្មោះ Role ជាន់គ្នា
         existing_role = db.query(Role).filter(Role.name == payload.name).first()
         if existing_role:
@@ -39,9 +39,18 @@ class RoleService:
                         db.add(role_perm)
                 db.commit()
 
-            # 3. Formulate response with permission IDs
-            setattr(db_role, "permissions", [p.permission_id for p in db.query(RolePermission).filter(RolePermission.role_id == db_role.id).all()])
-            return db_role
+            permission_ids = [
+                role_permission.permission_id
+                for role_permission in db.query(RolePermission)
+                .filter(RolePermission.role_id == db_role.id)
+                .all()
+            ]
+            return {
+                "id": db_role.id,
+                "name": db_role.name,
+                "description": db_role.description,
+                "permissions": permission_ids,
+            }
 
         except IntegrityError:
             db.rollback()

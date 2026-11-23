@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Optional
 
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 
 
 class UserRegister(BaseModel):
@@ -40,3 +40,24 @@ class UserResponse(BaseModel):
     last_login_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+
+class StudentSetupProfileSchema(BaseModel):
+    # User Account Info
+    username: str = Field(..., min_length=3, max_length=100)
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+    raw_key: str = Field(..., description="License key provided by teacher or admin")
+    
+    # Student Profile Info (ស្របតាម Model StudentProfile)
+    student_id: str = Field(..., description="University student ID card number")
+    full_name: str = Field(..., description="Student's full name")
+    gender: Optional[str] = Field(None, description="Male, Female, or Other")
+    date_of_birth: Optional[date] = None
+    
+    department: Optional[str] = None
+    major: Optional[str] = None
+    academic_year: Optional[str] = None
+    class_name: Optional[str] = None
+    
+    phone: Optional[str] = None
+    address: Optional[str] = None

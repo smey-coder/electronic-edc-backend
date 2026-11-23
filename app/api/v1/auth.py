@@ -17,8 +17,8 @@ from app.schemas.auth import (
 from fastapi.security import OAuth2PasswordRequestForm  # 📌 នាំចូល Form នេះ
 from app.core.security import get_password_hash, verify_password, create_access_token
 
-from app.core.dependencies import require_permission 
-from app.core.dependencies import require_roles
+from app.core.dependencies import get_current_user, require_permission, require_roles
+from app.services.student_auth_service import StudentAuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -78,6 +78,25 @@ def login(
     # បង្កើត Token
     access_token = create_access_token(data={"sub": str(user.id)})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.get("/me")
+def get_authenticated_user(current_user: User = Depends(get_current_user)):
+    return {
+        "user": {
+            "id": current_user.id,
+            "username": current_user.username,
+            "email": current_user.email,
+            "account_status": current_user.account_status,
+        },
+        "roles": [role.name for role in current_user.roles],
+        "permissions": sorted({
+            permission.name
+            for role in current_user.roles
+            for permission in role.permissions
+        }),
+    }
+
 
 @router.get("/users", response_model=List[UserResponse])
 def list_users(
@@ -175,3 +194,4 @@ def delete_user(
     db.delete(user)
     db.commit()
     return {"message": "User deleted successfully", "user_id": user_id}
+
