@@ -1,0 +1,1 @@
+# How to run FastAPI (python -m uvicorn app.main:app --reload)
