@@ -22,7 +22,6 @@ router = APIRouter(prefix="/students", tags=["Student Management & RBAC"])
 def create_student_profile(
     payload: StudentProfileCreate, 
     db: Session = Depends(get_db),
-
     #version1
     # user_by_role: User = Depends(require_roles(["Admin", "Teacher"])),  # ពិនិត្យ Role
     # current_user: User = Depends(require_permission("student:create"))  #ពិនិត្យ Permission

@@ -8,6 +8,10 @@ from app.api.v1.role import router as role_router
 from app.api.v1.permission import router as permission_router
 from app.api.v1.license_key import router as license_router
 from app.api.v1.student_auth import router as student_auth_router
+#Formula 
+from app.api.v1.formulas import router as formula_router
+from app.api.v1.formula_variables import router as formula_variable_router
+from app.api.v1.settings import router as settings_router
 # from app.api.v1.rbac import router as rbac_router
 # from app.api.v1.calculation import router as calc_router
 from app.api.v1.students import router as student_router
@@ -37,6 +41,9 @@ app.include_router(role_router, prefix="/api/v1") #role
 app.include_router(permission_router, prefix="/api/v1") #permission
 app.include_router(license_router, prefix="/api/v1")  #License key
 app.include_router(student_auth_router, prefix="/api/v1") # Student auth 
+app.include_router(formula_router, prefix="/api/v1",) # Formula 
+app.include_router(formula_variable_router,prefix="/api/v1",) # Formula variable
+app.include_router(settings_router, prefix="/api/v1")
 
 
 

@@ -32,3 +32,7 @@ class LicenseKeyUpdate(BaseModel):
     status: Optional[str] = Field(None, description="active, revoked, or expired")
     expires_at: Optional[datetime] = None
     description: Optional[str] = None
+
+
+class RedeemKeySchema(BaseModel):
+        raw_key: str

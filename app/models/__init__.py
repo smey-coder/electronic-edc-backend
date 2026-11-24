@@ -16,4 +16,7 @@ __all__ = [
     "StudentProfile",
     "LicenseKey",
     "LicenseKeyRedemption",
+    "FormulaCategory",
+    "Formula",
+    "FormulaVariable",
 ]

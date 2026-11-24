@@ -14,6 +14,8 @@ from app.database.session import get_db
 from app.core.security import SECRET_KEY, ALGORITHM
 from app.models.permission import Permission
 from app.models.role_permissions import RolePermission
+
+from app.services.license_access_service import get_license_access
 # from app.core.dependencies import get_current_user
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -99,3 +101,16 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=403, detail="Account is disabled.")
         
     return user
+
+
+def require_calculator_access(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> User:
+    access = get_license_access(db, current_user)
+    if not access["allowed"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"code": access["code"], "message": access["message"]},
+        )
+    return current_user

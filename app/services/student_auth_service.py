@@ -1,5 +1,6 @@
 import hashlib
 from datetime import datetime, timezone
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, status
@@ -11,6 +12,7 @@ from app.models.student_profile import StudentProfile
 from app.schemas.auth import StudentSetupProfileSchema
 from app.core.security import get_password_hash
 from app.models.user_role import UserRole
+from app.services.license_access_service import get_license_access
 
 class StudentAuthService:
 
@@ -138,3 +140,26 @@ class StudentAuthService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Student profile setup failed: {str(e)}"
             )
+
+    # service
+    @staticmethod
+    def redeem_for_existing_user(db: Session, user: User, raw_key: str) -> dict:
+        key_hash = StudentAuthService._hash_key(raw_key)
+        key = db.query(LicenseKey).filter(LicenseKey.key_hash == key_hash).first()
+        if not key:
+            raise HTTPException(404, "Invalid license key provided.")
+        if key.status != "active":
+            raise HTTPException(400, f"License key is not active (Status: {key.status}).")
+        if key.expires_at and key.expires_at < datetime.now():
+            key.status = "expired"
+            db.commit()
+            raise HTTPException(400, "License key has expired.")
+        if key.used_count >= key.max_uses:
+            raise HTTPException(400, "License key usage limit has already been reached.")
+        if db.query(LicenseKeyRedemption).filter_by(license_key_id=key.id, user_id=user.id).first():
+            raise HTTPException(400, "You have already used this key.")
+
+        db.add(LicenseKeyRedemption(license_key_id=key.id, user_id=user.id))
+        key.used_count += 1
+        db.commit()
+        return get_license_access(db, user)

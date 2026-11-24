@@ -30,7 +30,7 @@ class User(Base):
         secondary="user_roles",
         back_populates="users"
     )
-    # 🔗 Add this relationship property so SQLAlchemy maps it correctly
+    # Add this relationship property so SQLAlchemy maps it correctly
     student_profile: Mapped[Optional["StudentProfile"]] = relationship("StudentProfile", back_populates="user", uselist=False)
 
     
