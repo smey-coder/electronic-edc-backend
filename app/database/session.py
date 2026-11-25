@@ -4,7 +4,7 @@ from app.core.config import settings
 
 engine = create_engine(
     settings.DATABASE_URL,
-    echo=True,
+    echo=False,  # Disable SQL logging in production
     pool_pre_ping=True,
     pool_recycle=3600,
 )
@@ -14,7 +14,6 @@ SessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
-
 
 def get_db():
     db = SessionLocal()
