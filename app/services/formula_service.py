@@ -108,7 +108,6 @@ def safe_calculate(expression: str, variables: dict) -> float:
 # =========================================
 # Formula Category Services
 # =========================================
-
 def get_categories(db: Session):
     return (
         db.query(FormulaCategory)
@@ -176,7 +175,6 @@ def delete_category(db: Session, category_id: int):
 # =========================================
 # Formula Services
 # =========================================
-
 def get_formulas(db: Session, category_id=None, search=None):
 
     query = db.query(Formula).options(
@@ -222,6 +220,9 @@ def create_formula(db: Session, payload, current_user_id: int):
         category_id=payload.category_id,
         title=payload.title,
         expression=payload.expression,
+        display_formula=payload.display_formula,  
+        custom_logic=payload.custom_logic,
+        result_unit=payload.result_unit,
         description=payload.description,
         created_by=current_user_id,
     )
@@ -305,12 +306,9 @@ def delete_formula(db: Session, formula_id: int):
     db.commit()
 
     return True
-
-
 # =========================================
 # Formula Calculation Service
 # =========================================
-
 def calculate_formula(
     db: Session,
     formula_id: int,
@@ -334,21 +332,33 @@ def calculate_formula(
             "Missing variables: " + ", ".join(sorted(missing_variables))
         )
 
-    # Only allow variables configured for this formula.
     calculation_inputs = {
         key: input_variables[key]
         for key in required_variables
     }
 
-    result = safe_calculate(
-        formula.expression,
-        calculation_inputs,
-    )
+    # ត្រួតពិនិត្យ និងគណនាដោយផ្អែកលើ custom_logic ប្រសិនបើមាន
+    if formula.custom_logic and formula.custom_logic.strip():
+        try:
+            # ឬប្រើវិធីសុវត្ថិភាពជាងនេះតាមការចង់បាន ឧទាហរណ៍ eval/exec ក្នុង scope កំណត់
+            local_vars = {"values": calculation_inputs, "math": math}
+            # Execute custom logic snippet (ឧ. return values['I'] * values['R'])
+            result = eval(f"lambda values: ({formula.custom_logic.strip().replace('return ', '')})(values)", {"__builtins__": {}}, local_vars)(calculation_inputs)
+            result = round(float(result), 6)
+        except Exception as e:
+            raise ValueError(f"Custom logic calculation error: {str(e)}")
+    else:
+        # ប្រើប្រាស់ safe_calculate តាមស្តង់ដារ AST ដើម
+        result = safe_calculate(
+            formula.expression,
+            calculation_inputs,
+        )
 
     return {
         "formula_id": formula.id,
         "formula_title": formula.title,
-        "expression": formula.expression,
+        "expression": formula.display_formula or formula.expression,  # បង្ហាញ display_formula ប្រសិនបើមាន
         "inputs": calculation_inputs,
         "result": result,
+        "unit": formula.result_unit,
     }

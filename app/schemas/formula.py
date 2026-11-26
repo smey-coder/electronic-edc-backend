@@ -77,7 +77,13 @@ class FormulaCreate(BaseModel):
         min_length=1,
         max_length=255,
     )
+    display_formula: Optional[str] = Field(
+        default=None,
+        max_length=255,
+    )
 
+    custom_logic: Optional[str] = None
+    result_unit: Optional[str] = None
     description: Optional[str] = None
 
     variables: list[FormulaVariableCreate] = Field(
@@ -89,6 +95,9 @@ class FormulaUpdate(BaseModel):
     category_id: Optional[int] = None
     title: Optional[str] = Field(default=None, max_length=150)
     expression: Optional[str] = Field(default=None, max_length=255)
+    display_formula: Optional[str] = Field(default=None, max_length=255)
+    custom_logic: Optional[str] = None
+    result_unit: Optional[str] = None
     description: Optional[str] = None
 
     variables: Optional[list[FormulaVariableCreate]] = None
@@ -99,6 +108,9 @@ class FormulaResponse(BaseModel):
     category_id: Optional[int]
     title: str
     expression: str
+    display_formula: Optional[str]
+    custom_logic: Optional[str]
+    result_unit: Optional[str] = None
     description: Optional[str]
     created_by: int
     created_at: datetime
@@ -125,3 +137,4 @@ class FormulaCalculateResponse(BaseModel):
     expression: str
     inputs: dict[str, float]
     result: float
+    unit: Optional[str] = None

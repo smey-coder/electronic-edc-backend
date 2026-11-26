@@ -15,10 +15,8 @@ from sqlalchemy.orm import relationship
 
 from app.database.base import Base
 
-
 class FormulaCategory(Base):
     __tablename__ = "formula_categories"
-
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False, unique=True)
     description = Column(Text, nullable=True)
@@ -27,18 +25,13 @@ class FormulaCategory(Base):
         nullable=False,
         server_default=func.current_timestamp(),
     )
-
     formulas = relationship(
         "Formula",
         back_populates="category",
     )
-
-
 class Formula(Base):
     __tablename__ = "formulas"
-
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-
     category_id = Column(
         Integer,
         ForeignKey(
@@ -51,8 +44,10 @@ class Formula(Base):
 
     title = Column(String(150), nullable=False)
     expression = Column(String(255), nullable=False)
+    display_formula = Column(String(255), nullable=True)
+    custom_logic = Column(Text, nullable=True)
+    result_unit = Column(String(20), default=None)
     description = Column(Text, nullable=True)
-
     # Must match users.id = BIGINT
     created_by = Column(
         BigInteger,

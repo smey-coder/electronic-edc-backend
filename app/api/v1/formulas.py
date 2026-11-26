@@ -31,70 +31,16 @@ router = APIRouter(
     tags=["Formula Management"],
     dependencies=[Depends(require_calculator_access)],
 )
-
-
-# =========================================
-# Role Permission Helper
-# =========================================
-
-# def ensure_manager(user):
-#     """
-#     Only Admin and Teacher can manage formulas.
-#     Supports common SQLAlchemy role relationship patterns.
-#     """
-
-#     role_names = set()
-
-#     # Example: user.roles = [Role(name="Admin")]
-#     for role in getattr(user, "roles", []) or []:
-#         role_names.add(
-#             str(getattr(role, "name", role)).lower()
-#         )
-
-#     # Example: user.user_roles = [UserRole(role=Role(...))]
-#     for user_role in getattr(user, "user_roles", []) or []:
-#         role = getattr(user_role, "role", None)
-
-#         if role:
-#             role_names.add(
-#                 str(getattr(role, "name", role)).lower()
-#             )
-
-#     # Example: user.role = Role(name="Admin")
-#     single_role = getattr(user, "role", None)
-
-#     if single_role:
-#         role_names.add(
-#             str(getattr(single_role, "name", single_role)).lower()
-#         )
-
-#     # Example: user.role_name = "Teacher"
-#     role_name = getattr(user, "role_name", None)
-
-#     if role_name:
-#         role_names.add(str(role_name).lower())
-
-#     if not role_names.intersection({"admin", "teacher"}):
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Only Admin or Teacher can manage formulas.",
-#         )
-
-
 # =========================================
 # CATEGORY ENDPOINTS
 # =========================================
 
-@router.get(
-    "/categories",
-    response_model=list[FormulaCategoryResponse],
-)
+@router.get("/categories",response_model=list[FormulaCategoryResponse],)
 def list_categories(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role_and_permission(["Admin", "Teacher", "Student"], "formula.read"))
 ):
     return formula_service.get_categories(db)
-
 
 @router.post("/categories",response_model=FormulaCategoryResponse,status_code=status.HTTP_201_CREATED,)
 def create_category(
@@ -102,12 +48,10 @@ def create_category(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role_and_permission(["Admin", "Teacher"], "formula.create"))
 ):
-
     try:
         return formula_service.create_category(db, payload)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
-
 
 @router.put("/categories/{category_id}",response_model=FormulaCategoryResponse,)
 def update_category(category_id: int,payload: FormulaCategoryUpdate,
@@ -123,15 +67,13 @@ def update_category(category_id: int,payload: FormulaCategoryUpdate,
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
 
-
 @router.delete("/categories/{category_id}",status_code=status.HTTP_204_NO_CONTENT,)
 def delete_category(
     category_id: int,
     db: Session = Depends(get_db),
-    ccurrent_user: User = Depends(require_role_and_permission(["Admin", "Teacher"], "formula.delete"))
+    current_user: User = Depends(require_role_and_permission(["Admin", "Teacher"], "formula.delete"))
 ):
     
-
     try:
         formula_service.delete_category(db, category_id)
         return None
@@ -174,10 +116,7 @@ def get_formula(
     return formula
 
 
-@router.post(
-    "",
-    response_model=FormulaResponse,
-    status_code=status.HTTP_201_CREATED,
+@router.post("",response_model=FormulaResponse,status_code=status.HTTP_201_CREATED,
 )
 def create_formula(
     payload: FormulaCreate,
